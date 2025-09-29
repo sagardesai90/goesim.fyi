@@ -160,9 +160,19 @@ export async function GET(request: NextRequest) {
 
     const { count: totalCount } = await countQuery
 
+    // Flatten the response to include provider and country names at the top level
+    const flattenedPlans = (plans || []).map(plan => ({
+      ...plan,
+      provider_name: plan.provider?.name || null,
+      provider_logo_url: plan.provider?.logo_url || null,
+      provider_website_url: plan.provider?.website_url || null,
+      country_name: plan.country?.name || null,
+      country_code: plan.country?.code || null,
+    }))
+
     return NextResponse.json({
       success: true,
-      plans: plans || [],
+      plans: flattenedPlans,
       pagination: {
         total: totalCount || 0,
         limit,
