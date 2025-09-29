@@ -99,6 +99,25 @@ export abstract class BaseScraper {
       .single()
 
     try {
+      // Get unique country codes from plans
+      const countryCodes = [...new Set(plans.map(plan => plan.countryCode))]
+
+      // Delete all existing plans for this provider and countries to ensure clean data
+      for (const countryCode of countryCodes) {
+        const { data: country } = await supabase.from("countries").select("id").eq("code", countryCode).single()
+
+        if (country) {
+          const { error: deleteError } = await supabase
+            .from("esim_plans")
+            .delete()
+            .eq("provider_id", this.providerId)
+            .eq("country_id", country.id)
+
+          if (deleteError) {
+            result.errors.push(`Failed to delete old plans for ${countryCode}: ${deleteError.message}`)
+          }
+        }
+      }
       for (const plan of plans) {
         // Get country ID
         const { data: country } = await supabase.from("countries").select("id").eq("code", plan.countryCode).single()
@@ -107,15 +126,6 @@ export abstract class BaseScraper {
           result.errors.push(`Country not found: ${plan.countryCode}`)
           continue
         }
-
-        // Check if plan already exists
-        const { data: existingPlan } = await supabase
-          .from("esim_plans")
-          .select("id, price_usd")
-          .eq("provider_id", this.providerId)
-          .eq("country_id", country.id)
-          .eq("name", plan.name)
-          .single()
 
         const planData = {
           provider_id: this.providerId,
@@ -135,24 +145,13 @@ export abstract class BaseScraper {
           updated_at: new Date().toISOString(),
         }
 
-        if (existingPlan) {
-          // Update existing plan
-          const { error } = await supabase.from("esim_plans").update(planData).eq("id", existingPlan.id)
+        // Insert new plan (since we deleted old ones)
+        const { error } = await supabase.from("esim_plans").insert(planData)
 
-          if (error) {
-            result.errors.push(`Failed to update plan ${plan.name}: ${error.message}`)
-          } else {
-            result.plansUpdated++
-          }
+        if (error) {
+          result.errors.push(`Failed to insert plan ${plan.name}: ${error.message}`)
         } else {
-          // Insert new plan
-          const { error } = await supabase.from("esim_plans").insert(planData)
-
-          if (error) {
-            result.errors.push(`Failed to insert plan ${plan.name}: ${error.message}`)
-          } else {
-            result.plansAdded++
-          }
+          result.plansAdded++
         }
       }
 

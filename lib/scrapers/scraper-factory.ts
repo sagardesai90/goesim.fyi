@@ -18,15 +18,17 @@ export class ScraperFactory {
 
     switch (providerName.toLowerCase()) {
       case "airalo":
-        return new RealDataScraper(provider.id, "Airalo", "https://www.airalo.com")
+        return new AiraloScraper(provider.id)
       case "holafly":
         return new RealDataScraper(provider.id, "Holafly", "https://www.holafly.com")
+      case "saily":
+        return new RealDataScraper(provider.id, "Saily", "https://www.saily.com")
       default:
         return null
     }
   }
 
   static getSupportedProviders(): string[] {
-    return ["Airalo", "Holafly"]
+    return ["Airalo", "Holafly", "Saily"]
   }
 }

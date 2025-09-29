@@ -52,31 +52,33 @@ export function PlanComparison({ plans, selectedDataAmount }: PlanComparisonProp
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Load affiliate links for plans
+  // Load affiliate links for plans in batch
   useEffect(() => {
     const loadAffiliateLinks = async () => {
-      const links: Record<string, AffiliateLink> = {}
+      if (plans.length === 0) return
 
-      for (const plan of plans) {
-        try {
-          const response = await fetch(`/api/affiliate/link?planId=${plan.id}`)
-          if (response.ok) {
-            const data = await response.json()
-            if (data.affiliateLink) {
-              links[plan.id] = data.affiliateLink
-            }
-          }
-        } catch (error) {
-          console.error(`Failed to load affiliate link for plan ${plan.id}:`, error)
+      try {
+        const planIds = plans.map(plan => plan.id)
+        const response = await fetch('/api/affiliate/links', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ planIds })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setAffiliateLinks(data.affiliateLinks || {})
+        } else {
+          console.error('Failed to load affiliate links')
         }
+      } catch (error) {
+        console.error('Failed to load affiliate links:', error)
       }
-
-      setAffiliateLinks(links)
     }
 
-    if (plans.length > 0) {
-      loadAffiliateLinks()
-    }
+    loadAffiliateLinks()
   }, [plans])
 
   // Filter plans based on data amount
@@ -114,7 +116,7 @@ export function PlanComparison({ plans, selectedDataAmount }: PlanComparisonProp
 
   const handleFilterChange = (value: string) => {
     setFilterData(value)
-    const params = new URLSearchParams(searchParams)
+    const params = new URLSearchParams(searchParams.toString())
     if (value !== "all") {
       params.set("data", value)
     } else {

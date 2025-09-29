@@ -1,12 +1,8 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Check, ChevronsUpDown, MapPin } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+import { MapPin } from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface Country {
   id: string
@@ -21,18 +17,19 @@ interface CountrySelectorProps {
 }
 
 export function CountrySelector({ countries, selectedCountry }: CountrySelectorProps) {
-  const [open, setOpen] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const selectedCountryData = countries.find((country) => country.code === selectedCountry)
-
-  const handleCountrySelect = (countryCode: string) => {
-    const params = new URLSearchParams(searchParams)
-    params.set("country", countryCode)
-    router.push(`/?${params.toString()}`)
-    setOpen(false)
+  const handleCountrySelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const countryCode = event.target.value
+    if (countryCode) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set("country", countryCode)
+      router.push(`/?${params.toString()}`)
+    }
   }
+
+  const selectedCountryData = countries.find((country) => country.code === selectedCountry)
 
   // Group countries by region
   const countryGroups = countries.reduce(
@@ -47,6 +44,7 @@ export function CountrySelector({ countries, selectedCountry }: CountrySelectorP
     {} as Record<string, Country[]>,
   )
 
+
   return (
     <div className="space-y-4">
       <div className="text-center space-y-2">
@@ -58,56 +56,39 @@ export function CountrySelector({ countries, selectedCountry }: CountrySelectorP
       </div>
 
       <div className="flex justify-center">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-full max-w-md justify-between h-12 text-left bg-transparent"
+        {countries.length === 0 ? (
+          <div className="text-center p-4 border rounded-lg bg-muted/50">
+            <p className="text-muted-foreground">Loading countries...</p>
+            <p className="text-sm text-muted-foreground mt-1">If this persists, check your database connection.</p>
+          </div>
+        ) : (
+          <div className="w-full max-w-md">
+            <select
+              value={selectedCountry || ""}
+              onChange={handleCountrySelect}
+              className="w-full h-12 px-4 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent appearance-none cursor-pointer"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: 'right 12px center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '16px'
+              }}
             >
-              {selectedCountryData ? (
-                <span className="flex items-center gap-2">
-                  <span className="text-lg">{getFlagEmoji(selectedCountryData.code)}</span>
-                  {selectedCountryData.name}
-                </span>
-              ) : (
-                "Select a country..."
-              )}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-full max-w-md p-0" align="center">
-            <Command>
-              <CommandInput placeholder="Search countries..." />
-              <CommandList>
-                <CommandEmpty>No country found.</CommandEmpty>
-                {Object.entries(countryGroups).map(([region, regionCountries]) => (
-                  <CommandGroup key={region} heading={region}>
-                    {regionCountries.map((country) => (
-                      <CommandItem
-                        key={country.code}
-                        value={`${country.name} ${country.code}`}
-                        onSelect={() => handleCountrySelect(country.code)}
-                      >
-                        <span className="flex items-center gap-2 flex-1">
-                          <span className="text-lg">{getFlagEmoji(country.code)}</span>
-                          {country.name}
-                        </span>
-                        <Check
-                          className={cn(
-                            "ml-auto h-4 w-4",
-                            selectedCountry === country.code ? "opacity-100" : "opacity-0",
-                          )}
-                        />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                ))}
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+              <option value="" disabled>
+                Select a country...
+              </option>
+              {Object.entries(countryGroups).map(([region, regionCountries]) => (
+                <optgroup key={region} label={region}>
+                  {regionCountries.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {getFlagEmoji(country.code)} {country.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
     </div>
   )
