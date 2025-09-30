@@ -71,8 +71,8 @@ export class AiraloPuppeteerScraper extends BaseScraper {
 
             // Navigate to the country page
             await page.goto(countryUrl, {
-                waitUntil: 'networkidle2',
-                timeout: 30000
+                waitUntil: 'domcontentloaded', // More lenient than networkidle2
+                timeout: 60000 // Increased from 30s to 60s
             })
 
             // Wait for content to load
@@ -117,16 +117,29 @@ export class AiraloPuppeteerScraper extends BaseScraper {
 
                         childDivs.forEach(div => {
                             const text = div.textContent?.trim() || ''
-                            // Match price with currency symbol (€, $, £, etc.)
-                            if (text.match(/[\d.]+\s*[€$£¥₹]/)) {
+                            // Match price with currency symbol before or after the number
+                            if (text.match(/[€$£¥₹]\s*[\d.]+|[\d.]+\s*[€$£¥₹]/)) {
                                 priceText = text.replace(/\s+/g, ' ').trim()
                             }
                         })
 
-                        // Extract both price value and currency symbol
-                        const priceMatch = priceText.match(/([\d.]+)\s*([€$£¥₹])/)
-                        const priceValue = priceMatch ? parseFloat(priceMatch[1]) : null
-                        const currencySymbol = priceMatch ? priceMatch[2] : null
+                        // Extract price value and currency symbol (handle both formats)
+                        let priceValue: number | null = null
+                        let currencySymbol: string | null = null
+
+                        // Try symbol before number first (e.g., $4.50)
+                        let priceMatch = priceText.match(/([€$£¥₹])\s*([\d.]+)/)
+                        if (priceMatch) {
+                            currencySymbol = priceMatch[1]
+                            priceValue = parseFloat(priceMatch[2])
+                        } else {
+                            // Try symbol after number (e.g., 4.50€)
+                            priceMatch = priceText.match(/([\d.]+)\s*([€$£¥₹])/)
+                            if (priceMatch) {
+                                priceValue = parseFloat(priceMatch[1])
+                                currencySymbol = priceMatch[2]
+                            }
+                        }
 
                         // Map currency symbols to codes
                         const currencyMap: { [key: string]: string } = {
