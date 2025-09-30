@@ -5,6 +5,8 @@ export interface ScrapedPlan {
   dataAmountGb: number
   validityDays: number
   priceUsd: number
+  currency?: string // The currency code (USD, EUR, GBP, etc.) from the website
+  originalPrice?: number // The original price in the original currency
   isUnlimited: boolean
   networkType?: string
   coverageType?: string
@@ -134,6 +136,8 @@ export abstract class BaseScraper {
           data_amount_gb: plan.dataAmountGb,
           validity_days: plan.validityDays,
           price_usd: plan.priceUsd,
+          currency: plan.currency || "USD",
+          original_price: plan.originalPrice || plan.priceUsd,
           is_unlimited: plan.isUnlimited,
           network_type: plan.networkType || "4G/5G",
           coverage_type: plan.coverageType || "National",
