@@ -36,12 +36,10 @@ export async function POST(request: NextRequest) {
 
         const providers = ['Airalo', 'Saily'] // Add more providers as needed
 
-        // Country groups - each group runs at a different time to avoid timeouts
+        // Country groups - split into 2 groups to fit Vercel's 2 cron job limit
         const countryGroups = {
-            1: ['US', 'CA', 'GB'],      // Group 1: 2 AM UTC - North America & UK
-            2: ['DE', 'FR', 'ES'],      // Group 2: 8 AM UTC - Western Europe
-            3: ['IT', 'NL', 'CH'],      // Group 3: 2 PM UTC - Central Europe
-            4: ['JP', 'AU', 'SG']       // Group 4: 8 PM UTC - Asia Pacific
+            1: ['US', 'CA', 'GB', 'DE', 'FR', 'ES'],  // Group 1: 2 AM UTC - Americas & Europe
+            2: ['IT', 'JP', 'AU', 'NL', 'CH', 'SG']   // Group 2: 2 PM UTC - Europe & Asia Pacific
         }
 
         // Get group from query parameter (default to group 1)

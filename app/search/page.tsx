@@ -22,13 +22,27 @@ export default function SearchPage({
 
       const supabase = createClient()
 
-      // Fetch countries and providers for filters
+      // Fetch only countries with active plans and providers for filters
       const [{ data: countriesData }, { data: providersData }] = await Promise.all([
-        supabase.from("countries").select("code, name").order("name"),
+        supabase
+          .from("countries")
+          .select(`
+            code,
+            name,
+            esim_plans!inner(id)
+          `)
+          .eq("esim_plans.is_active", true)
+          .order("name"),
         supabase.from("providers").select("name").eq("is_active", true).order("name"),
       ])
 
-      setCountries(countriesData || [])
+      // Remove duplicate countries
+      const uniqueCountries = countriesData?.filter(
+        (country, index, self) => 
+          index === self.findIndex((c) => c.code === country.code)
+      ) || []
+
+      setCountries(uniqueCountries)
       setProviders(providersData || [])
       setLoading(false)
     }
