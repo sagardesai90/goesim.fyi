@@ -11,8 +11,21 @@ export default async function HomePage({
   const params = await searchParams
   const supabase = await createClient()
 
-  // Fetch countries for the selector
-  const { data: countries, error } = await supabase.from("countries").select("*").order("name")
+  // Fetch only countries that have active eSIM plans
+  const { data: countries, error } = await supabase
+    .from("countries")
+    .select(`
+      *,
+      esim_plans!inner(id)
+    `)
+    .eq("esim_plans.is_active", true)
+    .order("name")
+  
+  // Remove duplicate countries (in case a country has multiple plans)
+  const uniqueCountries = countries?.filter(
+    (country, index, self) => 
+      index === self.findIndex((c) => c.code === country.code)
+  ) || []
 
   // Fetch plans if country is selected
   let plans = null
@@ -52,7 +65,7 @@ export default async function HomePage({
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
-          <CountrySelector countries={countries || []} selectedCountry={params.country} />
+          <CountrySelector countries={uniqueCountries} selectedCountry={params.country} />
 
           {plans && plans.length > 0 ? (
             <PlanComparison plans={plans} selectedDataAmount={params.data} />

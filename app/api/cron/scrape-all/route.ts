@@ -35,8 +35,19 @@ export async function POST(request: NextRequest) {
         const startTime = Date.now()
 
         const providers = ['Airalo', 'Saily'] // Add more providers as needed
-        // For testing, you can reduce this to ['US', 'CA'] to test faster
-        const countries = ['US', 'CA', 'GB', 'DE', 'FR', 'ES', 'IT', 'JP', 'AU'] // Priority countries
+
+        // Country groups - split into 2 groups to fit Vercel's 2 cron job limit
+        const countryGroups = {
+            1: ['US', 'CA', 'GB', 'DE', 'FR', 'ES'],  // Group 1: 2 AM UTC - Americas & Europe
+            2: ['IT', 'JP', 'AU', 'NL', 'CH', 'SG']   // Group 2: 2 PM UTC - Europe & Asia Pacific
+        }
+
+        // Get group from query parameter (default to group 1)
+        const url = new URL(request.url)
+        const group = url.searchParams.get('group') || '1'
+        const countries = countryGroups[group as keyof typeof countryGroups] || countryGroups[1]
+
+        console.log(`[Cron] Processing country group ${group}:`, countries)
 
         const results: any[] = []
         let totalPlansScraped = 0

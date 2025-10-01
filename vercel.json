@@ -1,8 +1,12 @@
 {
     "crons": [
         {
-            "path": "/api/cron/scrape-all",
+            "path": "/api/cron/scrape-all?group=1",
             "schedule": "0 2 * * *"
+        },
+        {
+            "path": "/api/cron/scrape-all?group=2",
+            "schedule": "0 14 * * *"
         }
     ]
 }
