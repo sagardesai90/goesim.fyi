@@ -35,8 +35,21 @@ export async function POST(request: NextRequest) {
         const startTime = Date.now()
 
         const providers = ['Airalo', 'Saily'] // Add more providers as needed
-        // For testing, you can reduce this to ['US', 'CA'] to test faster
-        const countries = ['US', 'CA', 'GB', 'DE', 'FR', 'ES', 'IT', 'JP', 'AU'] // Priority countries
+
+        // Country groups - each group runs at a different time to avoid timeouts
+        const countryGroups = {
+            1: ['US', 'CA', 'GB'],      // Group 1: 2 AM UTC - North America & UK
+            2: ['DE', 'FR', 'ES'],      // Group 2: 8 AM UTC - Western Europe
+            3: ['IT', 'NL', 'CH'],      // Group 3: 2 PM UTC - Central Europe
+            4: ['JP', 'AU', 'SG']       // Group 4: 8 PM UTC - Asia Pacific
+        }
+
+        // Get group from query parameter (default to group 1)
+        const url = new URL(request.url)
+        const group = url.searchParams.get('group') || '1'
+        const countries = countryGroups[group as keyof typeof countryGroups] || countryGroups[1]
+
+        console.log(`[Cron] Processing country group ${group}:`, countries)
 
         const results: any[] = []
         let totalPlansScraped = 0
