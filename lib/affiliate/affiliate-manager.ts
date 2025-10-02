@@ -181,20 +181,26 @@ export class AffiliateManager {
     // This is a simplified implementation - in reality, each provider has different URL structures
     const url = new URL(originalUrl)
 
+    // Get provider name to determine affiliate parameters
+    const providerName = url.hostname.toLowerCase()
+
     // Common affiliate parameter patterns
     const affiliateParams = {
       // Airalo might use 'ref' parameter
-      airalo: { ref: affiliateCode },
+      'www.airalo.com': { ref: affiliateCode },
+      'airalo.com': { ref: affiliateCode },
       // Holafly might use 'affiliate' parameter
-      holafly: { affiliate: affiliateCode },
+      'holafly.com': { affiliate: affiliateCode },
+      // Saily might use 'ref' parameter
+      'saily.com': { ref: affiliateCode },
       // Generic fallback
       default: { aff: affiliateCode, utm_source: "comparison", utm_medium: "affiliate" },
     }
 
-    // Add affiliate parameters based on provider (simplified)
-    const params = affiliateParams.default
+    // Add affiliate parameters based on provider
+    const params = affiliateParams[providerName as keyof typeof affiliateParams] || affiliateParams.default
     Object.entries(params).forEach(([key, value]) => {
-      url.searchParams.set(key, value.toString())
+      url.searchParams.set(key, String(value))
     })
 
     return url.toString()
@@ -208,6 +214,7 @@ export class AffiliateManager {
       airalo: "COMP123",
       holafly: "COMP456",
       nomad: "COMP789",
+      saily: "SAILY123",
     }
 
     const affiliateLinks = []
