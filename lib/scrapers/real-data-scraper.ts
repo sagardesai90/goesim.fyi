@@ -34,6 +34,7 @@ export class RealDataScraper extends BaseScraper {
 
     private getAiraloPlans(countryCode: string): ScrapedPlan[] {
         // Real Airalo pricing structure (as of 2024)
+        const countrySlug = this.getAiraloCountrySlug(countryCode)
         const basePlans = [
             {
                 name: `${countryCode} 1GB - 7 Days`,
@@ -167,6 +168,7 @@ export class RealDataScraper extends BaseScraper {
 
     private getSailyPlans(countryCode: string): ScrapedPlan[] {
         // Real Saily pricing structure from their actual website (as of 2024)
+        const countrySlug = this.getSailyCountrySlug(countryCode)
         const basePlans = [
             {
                 name: `${countryCode} 1GB - 7 Days`,
@@ -459,5 +461,124 @@ export class RealDataScraper extends BaseScraper {
 
         const countryPricing = sailyUnlimitedPricing[countryCode] || sailyUnlimitedPricing['US']
         return countryPricing[days] || 48.99 // Default to 15 days price
+    }
+
+    /**
+     * Maps country codes to Saily's URL format
+     */
+    private getSailyCountrySlug(countryCode: string): string {
+        const countryUrlMap: Record<string, string> = {
+            'US': 'esim-united-states',
+            'CA': 'esim-canada',
+            'GB': 'esim-united-kingdom',
+            'DE': 'esim-germany',
+            'FR': 'esim-france',
+            'ES': 'esim-spain',
+            'IT': 'esim-italy',
+            'NL': 'esim-netherlands',
+            'JP': 'esim-japan',
+            'AU': 'esim-australia',
+            'TR': 'esim-turkey',
+            'TH': 'esim-thailand',
+            'SG': 'esim-singapore',
+            'MX': 'esim-mexico',
+            'BR': 'esim-brazil',
+            'AR': 'esim-argentina',
+            'CL': 'esim-chile',
+            'CO': 'esim-colombia',
+            'PE': 'esim-peru',
+            'IN': 'esim-india',
+            'AE': 'esim-united-arab-emirates',
+            'ZA': 'esim-south-africa',
+            'EG': 'esim-egypt',
+            'KE': 'esim-kenya',
+            'MA': 'esim-morocco',
+            'PH': 'esim-philippines',
+            'VN': 'esim-vietnam',
+            'MY': 'esim-malaysia',
+            'KR': 'esim-south-korea',
+            'TW': 'esim-taiwan',
+            'HK': 'esim-hong-kong',
+            'NZ': 'esim-new-zealand',
+            'PT': 'esim-portugal',
+            'GR': 'esim-greece',
+            'PL': 'esim-poland',
+            'SE': 'esim-sweden',
+            'NO': 'esim-norway',
+            'DK': 'esim-denmark',
+            'FI': 'esim-finland',
+            'CH': 'esim-switzerland',
+            'AT': 'esim-austria',
+            'BE': 'esim-belgium',
+            'CZ': 'esim-czech-republic',
+            'IL': 'esim-israel',
+            'QA': 'esim-qatar',
+            'KW': 'esim-kuwait',
+            'BH': 'esim-bahrain',
+            'JO': 'esim-jordan',
+        }
+
+        return countryUrlMap[countryCode] || `esim-${countryCode.toLowerCase()}`
+    }
+
+    /**
+     * Maps country codes to Airalo's URL format
+     */
+    private getAiraloCountrySlug(countryCode: string): string {
+        const countryUrlMap: Record<string, string> = {
+            'US': 'united-states',
+            'CA': 'canada',
+            'GB': 'united-kingdom',
+            'DE': 'germany',
+            'FR': 'france',
+            'ES': 'spain',
+            'IT': 'italy',
+            'NL': 'netherlands',
+            'JP': 'japan',
+            'AU': 'australia',
+            'TR': 'turkey',
+            'TH': 'thailand',
+            'SG': 'singapore',
+            'MX': 'mexico',
+            'BR': 'brazil',
+            'AR': 'argentina',
+            'CL': 'chile',
+            'CO': 'colombia',
+            'PE': 'peru',
+            'IN': 'india',
+            'AE': 'united-arab-emirates',
+            'ZA': 'south-africa',
+            'EG': 'egypt',
+            'KE': 'kenya',
+            'MA': 'morocco',
+            'PH': 'philippines',
+            'VN': 'vietnam',
+            'MY': 'malaysia',
+            'KR': 'south-korea',
+            'TW': 'taiwan',
+            'HK': 'hong-kong',
+            'NZ': 'new-zealand',
+            'PT': 'portugal',
+            'GR': 'greece',
+            'PL': 'poland',
+            'SE': 'sweden',
+            'NO': 'norway',
+            'DK': 'denmark',
+            'FI': 'finland',
+            'CH': 'switzerland',
+            'AT': 'austria',
+            'BE': 'belgium',
+            'CZ': 'czech-republic',
+            'IL': 'israel',
+            'QA': 'qatar',
+            'KW': 'kuwait',
+            'BH': 'bahrain',
+            'JO': 'jordan',
+            'CN': 'china',
+            'IE': 'ireland',
+            'IS': 'iceland',
+        }
+
+        return countryUrlMap[countryCode] || countryCode.toLowerCase()
     }
 }
