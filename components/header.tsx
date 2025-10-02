@@ -16,7 +16,7 @@ export function Header({ className }: HeaderProps) {
                     aria-label="Go to homepage"
                 >
                     <Smartphone className="h-6 w-6 text-primary" />
-                    <span className="font-bold text-lg">eSIM.fyi</span>
+                    <span className="font-bold text-lg">goesim.fyi</span>
                 </Link>
             </div>
         </header>
