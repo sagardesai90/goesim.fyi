@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server"
-import { CountrySelector } from "@/components/country-selector"
 import { PlanComparison } from "@/components/plan-comparison"
 import { HeroSection } from "@/components/hero-section"
 
@@ -20,10 +19,10 @@ export default async function HomePage({
     `)
     .eq("esim_plans.is_active", true)
     .order("name")
-  
+
   // Remove duplicate countries (in case a country has multiple plans)
   const uniqueCountries = countries?.filter(
-    (country, index, self) => 
+    (country, index, self) =>
       index === self.findIndex((c) => c.code === country.code)
   ) || []
 
@@ -61,12 +60,10 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen bg-background">
-      <HeroSection />
+      <HeroSection countries={uniqueCountries} selectedCountry={params.country} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
-          <CountrySelector countries={uniqueCountries} selectedCountry={params.country} />
-
           {plans && plans.length > 0 ? (
             <PlanComparison plans={plans} selectedDataAmount={params.data} />
           ) : params.country ? (

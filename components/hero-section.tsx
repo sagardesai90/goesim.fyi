@@ -1,10 +1,14 @@
-import { Globe, Zap, DollarSign, Search } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { Globe, Zap, DollarSign, MapPin } from "lucide-react"
+import { CountrySelector } from "@/components/country-selector"
 
-export function HeroSection() {
+interface HeroSectionProps {
+  countries: any[]
+  selectedCountry?: string
+}
+
+export function HeroSection({ countries, selectedCountry }: HeroSectionProps) {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20 border-b">
+    <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
       <div className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="space-y-4">
@@ -17,14 +21,7 @@ export function HeroSection() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="text-lg px-8">
-              <Link href="/search">
-                <Search className="h-5 w-5 mr-2" />
-                Advanced Search
-              </Link>
-            </Button>
-          </div>
+          <CountrySelector countries={countries} selectedCountry={selectedCountry} />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
             <div className="flex flex-col items-center space-y-3">
