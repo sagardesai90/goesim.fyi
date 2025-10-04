@@ -22,7 +22,7 @@ export default function SearchPage({
 
       const supabase = createClient()
 
-      // Fetch only countries with active plans and providers for filters
+      // Fetch only countries with active plans and only providers that are currently being tracked
       const [{ data: countriesData }, { data: providersData }] = await Promise.all([
         supabase
           .from("countries")
@@ -33,12 +33,17 @@ export default function SearchPage({
           `)
           .eq("esim_plans.is_active", true)
           .order("name"),
-        supabase.from("providers").select("name").eq("is_active", true).order("name"),
+        supabase
+          .from("providers")
+          .select("name")
+          .eq("is_active", true)
+          .in("name", ["Airalo", "Saily", "Holafly"]) // Only show providers we're currently tracking
+          .order("name"),
       ])
 
       // Remove duplicate countries
       const uniqueCountries = countriesData?.filter(
-        (country, index, self) => 
+        (country, index, self) =>
           index === self.findIndex((c) => c.code === country.code)
       ) || []
 
