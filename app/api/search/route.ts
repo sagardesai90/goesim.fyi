@@ -22,6 +22,14 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient()
 
+    // Get IDs of tracked providers
+    const { data: trackedProviders } = await supabase
+      .from("providers")
+      .select("id")
+      .in("name", ["Airalo", "Saily", "Holafly"])
+
+    const trackedProviderIds = trackedProviders?.map(p => p.id) || []
+
     let providerId: string | null = null
     let countryId: string | null = null
 
@@ -44,6 +52,7 @@ export async function GET(request: NextRequest) {
         country:countries(*)
       `)
       .eq("is_active", true)
+      .in("provider_id", trackedProviderIds) // Only return plans from tracked providers
 
     // Text search across plan names and provider names
     if (query) {
