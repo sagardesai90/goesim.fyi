@@ -1,6 +1,8 @@
+import { Suspense } from "react"
 import { createClient } from "@/lib/supabase/server"
-import { PlanComparison } from "@/components/plan-comparison"
 import { HeroSection } from "@/components/hero-section"
+import { HomePageClient } from "@/components/home-page-client"
+import { PlansLoadingState } from "@/components/plans-loading-state"
 
 export default async function HomePage({
   searchParams,
@@ -28,6 +30,7 @@ export default async function HomePage({
 
   // Fetch plans if country is selected
   let plans = null
+  let lastUpdated = null
   if (params.country) {
     // First get the country ID
     const { data: countryData } = await supabase
@@ -53,6 +56,18 @@ export default async function HomePage({
         console.error("Error fetching plans:", plansError)
       }
       plans = plansData
+      
+      // Get the most recent last_scraped_at timestamp from the plans
+      if (plansData && plansData.length > 0) {
+        const timestamps = plansData
+          .map(plan => plan.last_scraped_at)
+          .filter(Boolean)
+          .map(ts => new Date(ts).getTime())
+        
+        if (timestamps.length > 0) {
+          lastUpdated = new Date(Math.max(...timestamps)).toISOString()
+        }
+      }
     } else {
       plans = []
     }
@@ -64,18 +79,13 @@ export default async function HomePage({
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
-          {plans && plans.length > 0 ? (
-            <PlanComparison plans={plans} selectedDataAmount={params.data} />
-          ) : params.country ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">
-                No eSIM plans found for {countries?.find(c => c.code === params.country)?.name || params.country}.
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Try selecting a different country or check back later for new plans.
-              </p>
-            </div>
-          ) : null}
+          <HomePageClient
+            plans={plans}
+            selectedCountry={params.country}
+            selectedDataAmount={params.data}
+            countries={uniqueCountries}
+            lastUpdated={lastUpdated}
+          />
         </div>
       </main>
     </div>

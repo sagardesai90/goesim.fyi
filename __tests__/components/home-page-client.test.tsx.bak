@@ -1,0 +1,406 @@
+import React from 'react'
+import { render, screen, waitFor } from '@testing-library/react'
+import { HomePageClient } from '@/components/home-page-client'
+import { useRouter } from 'next/navigation'
+
+// Mock next/navigation
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+  useSearchParams: jest.fn(),
+}))
+
+// Mock child components
+jest.mock('@/components/plan-comparison', () => ({
+  PlanComparison: ({ plans }: any) => (
+    <div data-testid="plan-comparison">
+      <div data-testid="plans-count">{plans.length}</div>
+    </div>
+  ),
+}))
+
+jest.mock('@/components/plans-loading-state', () => ({
+  PlansLoadingState: ({ countryName }: any) => (
+    <div data-testid="plans-loading-state">
+      {countryName && <span data-testid="loading-country">{countryName}</span>}
+    </div>
+  ),
+}))
+
+jest.mock('@/components/data-freshness-indicator', () => ({
+  DataFreshnessIndicator: ({ lastUpdated }: any) => (
+    <div data-testid="data-freshness-indicator">
+      {lastUpdated && <span data-testid="last-updated">{lastUpdated}</span>}
+    </div>
+  ),
+}))
+
+describe('HomePageClient Component', () => {
+  const mockCountries = [
+    {
+      id: '1',
+      name: 'United States',
+      code: 'US',
+      region: 'North America',
+    },
+    {
+      id: '2',
+      name: 'Japan',
+      code: 'JP',
+      region: 'Asia',
+    },
+  ]
+
+  const mockPlans = [
+    {
+      id: '1',
+      name: 'Basic Plan',
+      data_amount_gb: 5,
+      validity_days: 7,
+      price_usd: 10,
+      is_unlimited: false,
+      price_per_gb: 2.0,
+      price_per_day: 1.43,
+      network_type: '4G/LTE',
+      hotspot_allowed: true,
+      voice_calls: false,
+      sms_included: false,
+      plan_url: 'https://example.com/plan1',
+      provider: {
+        id: 'p1',
+        name: 'Provider A',
+        logo_url: 'https://example.com/logo1.png',
+      },
+      country: {
+        name: 'United States',
+        code: 'US',
+      },
+    },
+  ]
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    ;(useRouter as jest.Mock).mockReturnValue({
+      push: jest.fn(),
+      prefetch: jest.fn(),
+    })
+    ;(require('next/navigation').useSearchParams as jest.Mock).mockReturnValue(
+      new URLSearchParams()
+    )
+  })
+
+  describe('Rendering States', () => {
+    it('should render nothing when no country is selected', () => {
+      const { container } = render(
+        <HomePageClient
+          plans={null}
+          selectedCountry={undefined}
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+          lastUpdated={null}
+        />
+      )
+
+      expect(container.firstChild).toBeNull()
+    })
+
+    it('should render PlanComparison when plans are available', () => {
+      render(
+        <HomePageClient
+          plans={mockPlans}
+          selectedCountry="US"
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+          lastUpdated={null}
+        />
+      )
+
+      expect(screen.getByTestId('plan-comparison')).toBeInTheDocument()
+      expect(screen.getByTestId('plans-count')).toHaveTextContent('1')
+    })
+
+    it('should render DataFreshnessIndicator when lastUpdated is provided', () => {
+      const lastUpdated = '2024-10-17T12:00:00Z'
+      render(
+        <HomePageClient
+          plans={mockPlans}
+          selectedCountry="US"
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+          lastUpdated={lastUpdated}
+        />
+      )
+
+      expect(screen.getByTestId('data-freshness-indicator')).toBeInTheDocument()
+      expect(screen.getByTestId('last-updated')).toHaveTextContent(lastUpdated)
+    })
+
+    it('should not render DataFreshnessIndicator when lastUpdated is null', () => {
+      render(
+        <HomePageClient
+          plans={mockPlans}
+          selectedCountry="US"
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+          lastUpdated={null}
+        />
+      )
+
+      expect(screen.queryByTestId('data-freshness-indicator')).not.toBeInTheDocument()
+    })
+
+    it('should render no results message when country selected but no plans', () => {
+      render(
+        <HomePageClient
+          plans={null}
+          selectedCountry="US"
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+        />
+      )
+
+      expect(screen.getByText(/No eSIM plans found for United States/i)).toBeInTheDocument()
+    })
+
+    it('should render no results message with country code if country not in list', () => {
+      render(
+        <HomePageClient
+          plans={null}
+          selectedCountry="XX"
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+        />
+      )
+
+      expect(screen.getByText(/No eSIM plans found for XX/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('Props Handling', () => {
+    it('should pass selectedDataAmount to PlanComparison', () => {
+      render(
+        <HomePageClient
+          plans={mockPlans}
+          selectedCountry="US"
+          selectedDataAmount="5"
+          countries={mockCountries}
+          lastUpdated={null}
+        />
+      )
+
+      expect(screen.getByTestId('plan-comparison')).toBeInTheDocument()
+    })
+
+    it('should handle empty plans array', () => {
+      render(
+        <HomePageClient
+          plans={[]}
+          selectedCountry="US"
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+        />
+      )
+
+      // Empty array should be treated as "no plans"
+      expect(screen.getByText(/No eSIM plans found/i)).toBeInTheDocument()
+    })
+
+    it('should find country name from countries array', () => {
+      render(
+        <HomePageClient
+          plans={null}
+          selectedCountry="JP"
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+        />
+      )
+
+      expect(screen.getByText(/No eSIM plans found for Japan/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('Data Amount Filter', () => {
+    it('should pass data amount filter to PlanComparison', () => {
+      render(
+        <HomePageClient
+          plans={mockPlans}
+          selectedCountry="US"
+          selectedDataAmount="10"
+          countries={mockCountries}
+          lastUpdated={null}
+        />
+      )
+
+      expect(screen.getByTestId('plan-comparison')).toBeInTheDocument()
+    })
+  })
+
+  describe('No Results State', () => {
+    it('should show helpful message in no results state', () => {
+      render(
+        <HomePageClient
+          plans={null}
+          selectedCountry="US"
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+        />
+      )
+
+      expect(
+        screen.getByText(/Try selecting a different country or check back later/i)
+      ).toBeInTheDocument()
+    })
+  })
+
+  describe('Integration', () => {
+    it('should work with real country data structure', () => {
+      const realCountries = [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          name: 'United States',
+          code: 'US',
+          region: 'North America',
+        },
+      ]
+
+      render(
+        <HomePageClient
+          plans={mockPlans}
+          selectedCountry="US"
+          selectedDataAmount={undefined}
+          countries={realCountries}
+        />
+      )
+
+      expect(screen.getByTestId('plan-comparison')).toBeInTheDocument()
+    })
+
+    it('should handle transition between states', () => {
+      const { rerender } = render(
+        <HomePageClient
+          plans={null}
+          selectedCountry={undefined}
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+        />
+      )
+
+      // No content initially
+      expect(screen.queryByTestId('plan-comparison')).not.toBeInTheDocument()
+
+      // Update to show plans
+      rerender(
+        <HomePageClient
+          plans={mockPlans}
+          selectedCountry="US"
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+        />
+      )
+
+      expect(screen.getByTestId('plan-comparison')).toBeInTheDocument()
+    })
+  })
+
+  describe('Edge Cases', () => {
+    it('should handle undefined countries array gracefully', () => {
+      expect(() => {
+        render(
+          <HomePageClient
+            plans={null}
+            selectedCountry="US"
+            selectedDataAmount={undefined}
+            countries={[]}
+          />
+        )
+      }).not.toThrow()
+    })
+
+    it('should handle special characters in country names', () => {
+      const specialCountries = [
+        {
+          id: '1',
+          name: "Côte d'Ivoire",
+          code: 'CI',
+          region: 'Africa',
+        },
+      ]
+
+      render(
+        <HomePageClient
+          plans={null}
+          selectedCountry="CI"
+          selectedDataAmount={undefined}
+          countries={specialCountries}
+        />
+      )
+
+      expect(screen.getByText(/No eSIM plans found for Côte d'Ivoire/i)).toBeInTheDocument()
+    })
+
+    it('should handle very long country names', () => {
+      const longNameCountries = [
+        {
+          id: '1',
+          name: 'United Kingdom of Great Britain and Northern Ireland',
+          code: 'GB',
+          region: 'Europe',
+        },
+      ]
+
+      render(
+        <HomePageClient
+          plans={null}
+          selectedCountry="GB"
+          selectedDataAmount={undefined}
+          countries={longNameCountries}
+        />
+      )
+
+      expect(
+        screen.getByText(/No eSIM plans found for United Kingdom of Great Britain/i)
+      ).toBeInTheDocument()
+    })
+  })
+
+  describe('Accessibility', () => {
+    it('should render semantic HTML', () => {
+      render(
+        <HomePageClient
+          plans={mockPlans}
+          selectedCountry="US"
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+        />
+      )
+
+      expect(screen.getByTestId('plan-comparison')).toBeInTheDocument()
+    })
+
+    it('should have readable text in no results state', () => {
+      render(
+        <HomePageClient
+          plans={null}
+          selectedCountry="US"
+          selectedDataAmount={undefined}
+          countries={mockCountries}
+          lastUpdated={null}
+        />
+      )
+
+      const message = screen.getByText(/No eSIM plans found/i)
+      expect(message).toBeVisible()
+    })
+  })
+})

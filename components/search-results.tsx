@@ -5,6 +5,7 @@ import { Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { PlanCard } from "@/components/plan-card"
+import { DataFreshnessIndicator } from "@/components/data-freshness-indicator"
 
 interface Plan {
   id: string
@@ -40,6 +41,7 @@ export function SearchResults({ searchParams, onLoadMore }: SearchResultsProps) 
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const [pagination, setPagination] = useState({
     total: 0,
     limit: 20,
@@ -72,6 +74,8 @@ export function SearchResults({ searchParams, onLoadMore }: SearchResultsProps) 
         setPlans((prev) => [...prev, ...data.plans])
       } else {
         setPlans(data.plans)
+        // Only update lastUpdated on new search, not on load more
+        setLastUpdated(data.lastUpdated || null)
       }
 
       setPagination(data.pagination)
@@ -120,6 +124,12 @@ export function SearchResults({ searchParams, onLoadMore }: SearchResultsProps) 
 
   return (
     <div className="space-y-6">
+      {lastUpdated && (
+        <div className="flex justify-center">
+          <DataFreshnessIndicator lastUpdated={lastUpdated} />
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground">
           Showing {plans.length} of {pagination.total} plans
