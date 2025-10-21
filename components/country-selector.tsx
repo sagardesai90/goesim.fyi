@@ -1,8 +1,8 @@
 "use client"
 
 import { useRouter, useSearchParams } from "next/navigation"
-import { MapPin, Search } from "lucide-react"
-import { useEffect, useState } from "react"
+import { MapPin, Search, Loader2 } from "lucide-react"
+import { useEffect, useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
@@ -21,15 +21,28 @@ interface CountrySelectorProps {
 export function CountrySelector({ countries, selectedCountry }: CountrySelectorProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [isNavigating, setIsNavigating] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  // Reset loading state when selected country changes (page loaded)
+  useEffect(() => {
+    setIsNavigating(false)
+  }, [selectedCountry])
 
   const handleCountrySelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const countryCode = event.target.value
     if (countryCode) {
+      setIsNavigating(true)
       const params = new URLSearchParams(searchParams.toString())
       params.set("country", countryCode)
-      router.push(`/?${params.toString()}`)
+      
+      startTransition(() => {
+        router.push(`/?${params.toString()}`)
+      })
     }
   }
+
+  const isLoading = isNavigating || isPending
 
   const selectedCountryData = countries.find((country) => country.code === selectedCountry)
 
@@ -65,16 +78,20 @@ export function CountrySelector({ countries, selectedCountry }: CountrySelectorP
           </div>
         ) : (
           <>
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-md relative">
               <select
                 value={selectedCountry || ""}
                 onChange={handleCountrySelect}
-                className="w-full h-12 px-4 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent appearance-none cursor-pointer"
+                disabled={isLoading}
+                className="w-full h-12 px-4 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundImage: isLoading 
+                    ? 'none'
+                    : `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
                   backgroundPosition: 'right 12px center',
                   backgroundRepeat: 'no-repeat',
-                  backgroundSize: '16px'
+                  backgroundSize: '16px',
+                  paddingRight: isLoading ? '44px' : undefined,
                 }}
               >
                 <option value="" disabled>
@@ -90,6 +107,11 @@ export function CountrySelector({ countries, selectedCountry }: CountrySelectorP
                   </optgroup>
                 ))}
               </select>
+              {isLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <Loader2 className="h-5 w-5 text-primary animate-spin" />
+                </div>
+              )}
             </div>
 
             <div className="flex items-center w-full max-w-md">

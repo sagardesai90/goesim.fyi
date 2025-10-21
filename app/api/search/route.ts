@@ -179,9 +179,23 @@ export async function GET(request: NextRequest) {
       country_code: plan.country?.code || null,
     }))
 
+    // Get the most recent last_scraped_at timestamp from the plans
+    let lastUpdated = null
+    if (plans && plans.length > 0) {
+      const timestamps = plans
+        .map(plan => plan.last_scraped_at)
+        .filter(Boolean)
+        .map(ts => new Date(ts).getTime())
+      
+      if (timestamps.length > 0) {
+        lastUpdated = new Date(Math.max(...timestamps)).toISOString()
+      }
+    }
+
     return NextResponse.json({
       success: true,
       plans: flattenedPlans,
+      lastUpdated,
       pagination: {
         total: totalCount || 0,
         limit,
