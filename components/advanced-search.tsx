@@ -125,7 +125,7 @@ export function AdvancedSearch({ countries, providers, onSearch, initialFilters 
           </CardTitle>
           <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm">
+              <Button variant="link" size="sm" className="text-blue-600 hover:text-blue-700 p-0 h-auto">
                 <Filter className="h-4 w-4 mr-2" />
                 Advanced
                 {isExpanded ? <ChevronUp className="h-4 w-4 ml-2" /> : <ChevronDown className="h-4 w-4 ml-2" />}
@@ -147,7 +147,7 @@ export function AdvancedSearch({ countries, providers, onSearch, initialFilters 
               onChange={(e) => handleFilterChange("query", e.target.value)}
               className="flex-1"
             />
-            <Button onClick={handleSearch}>
+            <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white">
               <Search className="h-4 w-4 mr-2" />
               Search
             </Button>
@@ -323,7 +323,7 @@ export function AdvancedSearch({ countries, providers, onSearch, initialFilters 
 
             {/* Action Buttons */}
             <div className="flex gap-2 pt-4">
-              <Button onClick={handleSearch} className="flex-1">
+              <Button onClick={handleSearch} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
                 <Search className="h-4 w-4 mr-2" />
                 Apply Filters
               </Button>
