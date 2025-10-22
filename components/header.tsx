@@ -17,7 +17,7 @@ export function Header({ className }: HeaderProps) {
                 >
                     <Smartphone className="h-6 w-6 text-primary" />
                     <span className="font-bold text-lg">
-                        <span className="text-primary">go</span>eSIM.fyi
+                        <span className="text-blue-600">go</span>eSIM.fyi
                     </span>
                 </Link>
             </div>
