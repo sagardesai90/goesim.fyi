@@ -35,7 +35,7 @@ export function CountrySelector({ countries, selectedCountry }: CountrySelectorP
       setIsNavigating(true)
       const params = new URLSearchParams(searchParams.toString())
       params.set("country", countryCode)
-      
+
       startTransition(() => {
         router.push(`/?${params.toString()}`)
       })
@@ -85,7 +85,7 @@ export function CountrySelector({ countries, selectedCountry }: CountrySelectorP
                 disabled={isLoading}
                 className="w-full h-12 px-4 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
-                  backgroundImage: isLoading 
+                  backgroundImage: isLoading
                     ? 'none'
                     : `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
                   backgroundPosition: 'right 12px center',
@@ -120,7 +120,7 @@ export function CountrySelector({ countries, selectedCountry }: CountrySelectorP
               <div className="flex-1 border-t border-muted-foreground/30"></div>
             </div>
 
-            <Button asChild size="lg" className="text-lg px-8">
+            <Button asChild size="lg" className="text-lg px-8 bg-blue-600 hover:bg-blue-700 text-white">
               <Link href="/search">
                 <Search className="h-5 w-5 mr-2" />
                 Advanced Search
