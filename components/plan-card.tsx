@@ -4,6 +4,7 @@ import { Wifi, Clock, Zap } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AffiliateLinkButton } from "@/components/affiliate-link-button"
+import { AddToCompareButton } from "@/components/add-to-compare-button"
 import { cn } from "@/lib/utils"
 
 interface Plan {
@@ -117,9 +118,15 @@ export function PlanCard({ plan, isBestDeal }: PlanCardProps) {
           )}
         </div>
 
-        <AffiliateLinkButton planId={plan.id} originalUrl={plan.plan_url} className="w-full">
-          Buy Now
-        </AffiliateLinkButton>
+        <div className="flex gap-2">
+          <AffiliateLinkButton planId={plan.id} originalUrl={plan.plan_url} className="flex-1">
+            Buy Now
+          </AffiliateLinkButton>
+          <AddToCompareButton 
+            planId={plan.id} 
+            planName={`${plan.provider?.name} - ${plan.data_amount_gb}GB`}
+          />
+        </div>
       </CardContent>
     </Card>
   )
