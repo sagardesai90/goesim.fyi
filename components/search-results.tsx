@@ -55,6 +55,16 @@ export function SearchResults({ searchParams, onLoadMore }: SearchResultsProps) 
 
     try {
       const params = new URLSearchParams(searchParams)
+      
+      // Map 'query' parameter to 'q' for the API
+      if (params.has("query")) {
+        const queryValue = params.get("query")
+        params.delete("query")
+        if (queryValue) {
+          params.set("q", queryValue)
+        }
+      }
+      
       if (isLoadMore) {
         params.set("offset", pagination.offset.toString())
       } else {
