@@ -56,7 +56,10 @@ export async function GET(request: NextRequest) {
 
     // Text search across plan names and provider names
     if (query) {
-      queryBuilder = queryBuilder.or(`name.ilike.%${query}%,providers.name.ilike.%${query}%`)
+      // Properly escape and format the query for Supabase PostgREST
+      // PostgREST uses * for wildcards in ilike, not %
+      const escapedQuery = query.replace(/'/g, "''") // Escape single quotes
+      queryBuilder = queryBuilder.or(`name.ilike.*${escapedQuery}*,providers.name.ilike.*${escapedQuery}*`)
     }
 
     if (countryId) {
@@ -126,7 +129,8 @@ export async function GET(request: NextRequest) {
 
     // Apply same filters for count
     if (query) {
-      countQuery = countQuery.or(`name.ilike.%${query}%,providers.name.ilike.%${query}%`)
+      const escapedQuery = query.replace(/'/g, "''") // Escape single quotes
+      countQuery = countQuery.or(`name.ilike.*${escapedQuery}*,providers.name.ilike.*${escapedQuery}*`)
     }
     if (countryId) {
       countQuery = countQuery.eq("country_id", countryId)
