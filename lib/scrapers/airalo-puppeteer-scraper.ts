@@ -1,5 +1,9 @@
 import puppeteer, { Browser, Page } from 'puppeteer'
 import { BaseScraper, type ScrapedPlan } from './base-scraper'
+import { AIRALO_PUPPETEER_COUNTRIES } from './airalo-puppeteer/countries'
+import { AIRALO_CURRENCY_RATES } from './airalo-puppeteer/currency-rates'
+import { AIRALO_PUPPETEER_COUNTRY_SLUGS } from './airalo-puppeteer/country-slugs'
+import { PUPPETEER_LAUNCH_ARGS } from './airalo-puppeteer/launch-args'
 
 /**
  * Improved Airalo scraper using Puppeteer for accurate real-time data extraction.
@@ -28,15 +32,7 @@ export class AiraloPuppeteerScraper extends BaseScraper {
             this.browser = await puppeteer.launch({
                 headless: true,
                 executablePath, // Explicitly tell Puppeteer where Chrome is
-                args: [
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--disable-accelerated-2d-canvas',
-                    '--no-first-run',
-                    '--no-zygote',
-                    '--disable-gpu',
-                ]
+                args: [...PUPPETEER_LAUNCH_ARGS],
             })
         }
     }
@@ -224,18 +220,10 @@ export class AiraloPuppeteerScraper extends BaseScraper {
 
             // Approximate currency conversion rates (fallback)
             // In production, you should use a real-time currency API like exchangerate-api.com
-            const currencyRates: { [key: string]: number } = {
-                'USD': 1.0,
-                'EUR': 1.10,
-                'GBP': 1.27,
-                'JPY': 0.0067,
-                'INR': 0.012
-            }
-
             // Transform extracted data to ScrapedPlan format
             for (const plan of extractedData.plans) {
                 // Convert to USD if not already in USD
-                const conversionRate = currencyRates[plan.currency] || 1.0
+                const conversionRate = AIRALO_CURRENCY_RATES[plan.currency] || 1.0
                 const priceInUsd = plan.currency === 'USD'
                     ? plan.priceValue
                     : parseFloat((plan.priceValue * conversionRate).toFixed(2))
@@ -275,16 +263,10 @@ export class AiraloPuppeteerScraper extends BaseScraper {
         const allPlans: ScrapedPlan[] = []
 
         // Common countries to scrape
-        const countries = [
-            'US', 'CA', 'GB', 'DE', 'FR', 'JP', 'AU',
-            'ES', 'IT', 'NL', 'TR', 'TH', 'CN',
-            'ID', 'SG', 'IE', 'OM', 'SA'
-        ]
-
         try {
             await this.initialize()
 
-            for (const countryCode of countries) {
+            for (const countryCode of AIRALO_PUPPETEER_COUNTRIES) {
                 console.log(`[Airalo Puppeteer] Processing country: ${countryCode}`)
                 const countryPlans = await this.scrapeCountry(countryCode)
                 allPlans.push(...countryPlans)
@@ -303,62 +285,6 @@ export class AiraloPuppeteerScraper extends BaseScraper {
      * Maps country codes to Airalo's URL format
      */
     private getCountrySlug(countryCode: string): string {
-        const countryUrlMap: Record<string, string> = {
-            'CN': 'china-esim',
-            'US': 'united-states-esim',
-            'CA': 'canada-esim',
-            'GB': 'united-kingdom-esim',
-            'DE': 'germany-esim',
-            'FR': 'france-esim',
-            'JP': 'japan-esim',
-            'AU': 'australia-esim',
-            'ES': 'spain-esim',
-            'IT': 'italy-esim',
-            'NL': 'netherlands-esim',
-            'TR': 'turkey-esim',
-            'TH': 'thailand-esim',
-            'ID': 'indonesia-esim',
-            'SG': 'singapore-esim',
-            'IE': 'ireland-esim',
-            'OM': 'oman-esim',
-            'SA': 'saudi-arabia-esim',
-            'MX': 'mexico-esim',
-            'BR': 'brazil-esim',
-            'AR': 'argentina-esim',
-            'CL': 'chile-esim',
-            'CO': 'colombia-esim',
-            'PE': 'peru-esim',
-            'IN': 'india-esim',
-            'AE': 'united-arab-emirates-esim',
-            'ZA': 'south-africa-esim',
-            'EG': 'egypt-esim',
-            'KE': 'kenya-esim',
-            'MA': 'morocco-esim',
-            'PH': 'philippines-esim',
-            'VN': 'vietnam-esim',
-            'MY': 'malaysia-esim',
-            'KR': 'south-korea-esim',
-            'TW': 'taiwan-esim',
-            'HK': 'hong-kong-esim',
-            'NZ': 'new-zealand-esim',
-            'PT': 'portugal-esim',
-            'GR': 'greece-esim',
-            'PL': 'poland-esim',
-            'SE': 'sweden-esim',
-            'NO': 'norway-esim',
-            'DK': 'denmark-esim',
-            'FI': 'finland-esim',
-            'CH': 'switzerland-esim',
-            'AT': 'austria-esim',
-            'BE': 'belgium-esim',
-            'CZ': 'czech-republic-esim',
-            'IL': 'israel-esim',
-            'QA': 'qatar-esim',
-            'KW': 'kuwait-esim',
-            'BH': 'bahrain-esim',
-            'JO': 'jordan-esim',
-        }
-
-        return countryUrlMap[countryCode] || `${countryCode.toLowerCase()}-esim`
+        return AIRALO_PUPPETEER_COUNTRY_SLUGS[countryCode] || `${countryCode.toLowerCase()}-esim`
     }
 }
