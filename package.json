@@ -9,6 +9,7 @@
     "start": "next start",
     "scrape:saily": "tsx scripts/scrape-all-saily-countries.ts",
     "debug:saily": "tsx scripts/debug-saily-page.ts",
+    "test:holafly": "tsx scripts/test-holafly-scraper.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -78,6 +79,7 @@
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "dotenv": "^17.2.3",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
     "lightningcss": "^1.30.2",

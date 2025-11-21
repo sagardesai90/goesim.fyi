@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { AiraloScraper } from "./airalo-scraper"
 import { AiraloPuppeteerScraper } from "./airalo-puppeteer-scraper"
 import { SailyPuppeteerScraper } from "./saily-puppeteer-scraper"
+import { HolaflyPuppeteerScraper } from "./holafly-puppeteer-scraper"
 import { HolaflyScraper } from "./holafly-scraper"
 import { PuppeteerScraper } from "./puppeteer-scraper"
 import { RealDataScraper } from "./real-data-scraper"
@@ -26,7 +27,8 @@ export class ScraperFactory {
         // Use the Puppeteer-based scraper for Saily
         return new SailyPuppeteerScraper(provider.id)
       case "holafly":
-        return new RealDataScraper(provider.id, "Holafly", "https://www.holafly.com")
+        // Use the Puppeteer-based scraper for Holafly with dynamic pricing
+        return new HolaflyPuppeteerScraper(provider.id)
       default:
         return null
     }

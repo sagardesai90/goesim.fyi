@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
         console.log('[Cron] Starting scheduled scraping job...')
         const startTime = Date.now()
 
-        const providers = ['Airalo', 'Saily'] // Add more providers as needed
+        const providers = ['Airalo', 'Saily', 'Holafly'] // All active providers
 
         // Country groups - split into 2 groups to fit Vercel's 2 cron job limit
         const countryGroups = {

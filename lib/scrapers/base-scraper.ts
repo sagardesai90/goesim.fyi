@@ -88,6 +88,29 @@ export abstract class BaseScraper {
       errors: [],
     }
 
+    // If no plans found, don't delete existing data - retain stale data instead
+    if (plans.length === 0) {
+      console.warn(`[${this.providerName}] No plans to save, retaining existing database data`)
+
+      // Still log the scraping attempt
+      await supabase
+        .from("scraping_logs")
+        .insert({
+          provider_id: this.providerId,
+          scrape_type: "full",
+          status: "completed",
+          plans_found: 0,
+          plans_added: 0,
+          plans_updated: 0,
+          completed_at: new Date().toISOString(),
+          error_message: "No plans found during scraping",
+        })
+
+      result.success = false
+      result.errors.push('No plans found during scraping')
+      return result
+    }
+
     // Start scraping log
     const { data: logData } = await supabase
       .from("scraping_logs")
