@@ -1,3 +1,10 @@
+/**
+ * @deprecated This static data generator is deprecated and no longer used.
+ * Holafly now uses HolaflyPuppeteerScraper for dynamic real-time pricing.
+ *
+ * This file is kept for reference only.
+ */
+
 import type { ScrapedPlan } from '../base-scraper'
 
 import { HOLALFY_BASE_PRICES } from './holafly-pricing'

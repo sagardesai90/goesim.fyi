@@ -1,3 +1,10 @@
+/**
+ * @deprecated This scraper is deprecated and no longer used.
+ * Use HolaflyPuppeteerScraper instead for accurate real-time data.
+ *
+ * This file is kept for reference only.
+ */
+
 import { BaseScraper, type ScrapedPlan } from "./base-scraper"
 
 export class HolaflyScraper extends BaseScraper {

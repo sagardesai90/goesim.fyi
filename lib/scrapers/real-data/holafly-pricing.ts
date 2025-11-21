@@ -1,3 +1,10 @@
+/**
+ * @deprecated This static pricing data is deprecated and no longer used.
+ * Holafly now uses HolaflyPuppeteerScraper for dynamic real-time pricing.
+ *
+ * This file is kept for reference only.
+ */
+
 export const HOLALFY_BASE_PRICES: Record<string, number> = {
   US: 19.0,
   GB: 17.0,
